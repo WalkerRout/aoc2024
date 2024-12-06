@@ -1,0 +1,56 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           aoc2024
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/aoc2024#readme>
+homepage:       https://github.com/WalkerRout/aoc2024#readme
+bug-reports:    https://github.com/WalkerRout/aoc2024/issues
+author:         Walker Rout
+maintainer:     walkerrout04@gmail.com
+copyright:      2024 Walker Rout
+license:        BSD-3-Clause
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/WalkerRout/aoc2024
+
+library
+  exposed-modules:
+      Lib
+      Lib.DayFive
+      Lib.DayFour
+      Lib.DayOne
+      Lib.DaySix
+      Lib.DayThree
+      Lib.DayTwo
+  other-modules:
+      Paths_aoc2024
+  autogen-modules:
+      Paths_aoc2024
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , containers
+  default-language: Haskell2010
+
+executable aoc2024-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_aoc2024
+  autogen-modules:
+      Paths_aoc2024
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aoc2024
+    , base >=4.7 && <5
+    , containers
+  default-language: Haskell2010
