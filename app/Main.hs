@@ -17,5 +17,5 @@ main = do
   solveDayThree
   solveDayFour
   solveDayFive
-  --solveDaySix
+  solveDaySix
   solveDaySeven

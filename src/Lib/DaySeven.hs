@@ -28,10 +28,11 @@ identifyOperators (ProtoEquation result (initial:rest)) fs = helper rest initial
     -- for each operand in the list, we want to test out each path, dictated by
     -- each function f <- fs
     helper (o:os) acc =
+      -- in any other language this would be a match, but haskell has alternative!
+      let battlePaths found f = helper os (f acc o) <|> found
       -- we want to combine the result of f guiding the path with all other paths guided
       -- by the other fs
-      let eitherOr found f = helper os (f acc o) <|> found
-      in foldl' eitherOr Nothing fs
+      in foldl' battlePaths Nothing fs
 -- someone passed in <2 operands...
 identifyOperators _ _ = Nothing
 
