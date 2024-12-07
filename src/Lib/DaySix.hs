@@ -34,22 +34,21 @@ march (Guard (r, c) West)  = (r, c-1)
 viewFront :: Grid -> Guard -> Maybe Cell
 viewFront grid guard = Map.lookup (march guard) grid
 
-countUniquePositions :: Grid -> Guard -> Int
--- check in front of us; if we have nothing infront of us, stop
--- if we dont, try moving guard
-countUniquePositions grid guard = helper guard Set.empty
+visitedPositions :: Grid -> Guard -> Set.Set Position
+visitedPositions grid guard = helper guard Set.empty
   where
     helper !guard@(Guard pos _) seen = case viewFront grid guard of
-      Nothing -> Set.size newSeen
-      Just infront -> helper (advance guard infront) newSeen
-      where
-        newSeen = Set.insert pos seen
+      Nothing -> Set.insert pos seen
+      Just infront -> helper (advance guard infront) (Set.insert pos seen)
+
+countUniquePositions :: Grid -> Guard -> Int
+countUniquePositions grid = Set.size . visitedPositions grid
 
 solvePartOne :: Grid -> Guard -> Int
-solvePartOne grid guard = countUniquePositions grid guard
+solvePartOne = countUniquePositions
 
-simulateLoop :: Grid -> Guard -> Bool
-simulateLoop grid guard = helper guard Set.empty
+causesLoop :: Grid -> Guard -> Bool
+causesLoop grid guard = helper guard Set.empty
   where
     helper !guard seen
       | guard `Set.member` seen = True
@@ -59,25 +58,22 @@ simulateLoop grid guard = helper guard Set.empty
             let newGuard = advance guard infront
             in helper newGuard (Set.insert guard seen)
 
-causesLoop :: Grid -> Guard -> Position -> Bool
-causesLoop grid guard pos =
-  -- replace whatever with Obstacle at pos
-  let modifiedGrid = Map.adjust (const Obstacle) pos grid
-  in simulateLoop modifiedGrid guard
-
 countLoopCausingObstacles :: Grid -> Guard -> Int
--- for every open position, place an obstacle and simulate the guards path
 countLoopCausingObstacles grid guard@(Guard start _) =
-  let candidates = [pos | (pos, cell) <- Map.toList grid, cell == Empty, pos /= start]
+  let visited = visitedPositions grid guard
+      candidates = Set.toList $ Set.filter (/= start) visited
   in helper candidates 0
   where
     helper [] !acc = acc
+    -- for each candidate c, we check if adding an obstacle on c causes a loop,
+    -- if it does, we increment the number of loops caused, otherwise we continue to next
     helper (c:cs) !acc = 
-      let newAcc = if causesLoop grid guard c then acc+1 else acc
+      let modifiedGrid = Map.adjust (const Obstacle) c grid
+          newAcc = if causesLoop modifiedGrid guard then acc+1 else acc
       in helper cs newAcc
 
 solvePartTwo :: Grid -> Guard -> Int
-solvePartTwo grid guard = countLoopCausingObstacles grid guard
+solvePartTwo = countLoopCausingObstacles
 
 solveDaySix :: IO ()
 solveDaySix = do
