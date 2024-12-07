@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Lib.DaySeven (solveDaySeven) where
 
 import Data.Int (Int64)
@@ -20,14 +22,14 @@ identifyOperators :: ProtoEquation -> [(Int64 -> Int64 -> Int64)] -> Maybe Int64
 identifyOperators (ProtoEquation result (initial:rest)) fs = helper rest initial
   where
     -- todo; memoize this function...
-    helper [] acc 
+    helper [] !acc
       -- somehow we found the right path
       | acc == result = Just acc
       -- missed it...
       | otherwise = Nothing
     -- for each operand in the list, we want to test out each path, dictated by
     -- each function f <- fs
-    helper (o:os) acc =
+    helper (o:os) !acc =
       -- in any other language this would be a match, but haskell has alternative!
       let battlePaths found f = helper os (f acc o) <|> found
       -- we want to combine the result of f guiding the path with all other paths guided
