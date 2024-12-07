@@ -48,8 +48,8 @@ solveDayOne = do
 
 readFileToLists :: FilePath -> IO ([Int], [Int])
 readFileToLists filePath = do
-  contents <- readFile filePath
-  let pairs = map parseLine (lines contents)
+  content <- readFile filePath
+  let pairs = map parseLine (lines content)
   let col1 = map fst pairs
   let col2 = map snd pairs
   return (col1, col2)

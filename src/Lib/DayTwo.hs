@@ -1,7 +1,5 @@
 module Lib.DayTwo (solveDayTwo) where
 
-import System.IO
-
 -- we will reuse these functions, so may as well put them top level...
 
 isSafeReport :: (Ord a, Num a) => [a] -> Bool
@@ -63,11 +61,11 @@ solveDayTwo = do
 
 readFileToList :: FilePath -> IO [[Int]]
 readFileToList filePath = do
-  contents <- readFile filePath
-  return $ parseLevels contents
+  content <- readFile filePath
+  return $ parseLevels content
 
 parseLevels :: String -> [[Int]]
-parseLevels contents = map parseLine (lines contents)
+parseLevels content = map parseLine (lines content)
 
 parseLine :: String -> [Int]
 parseLine line = map read (words line)

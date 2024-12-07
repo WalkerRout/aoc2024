@@ -6,6 +6,7 @@ import Lib
   , solveDayThree
   , solveDayFour
   , solveDayFive
+  , solveDaySix
   )
 
 main :: IO ()
@@ -15,3 +16,4 @@ main = do
   solveDayThree
   solveDayFour
   solveDayFive
+  solveDaySix
