@@ -50,6 +50,7 @@ solvePartOne = countUniquePositions
 causesLoop :: Grid -> Guard -> Bool
 causesLoop grid guard = helper guard Set.empty
   where
+    -- we use grid
     helper !guard seen
       | guard `Set.member` seen = True
       | otherwise = case viewFront grid guard of
