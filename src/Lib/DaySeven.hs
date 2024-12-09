@@ -87,7 +87,6 @@ trim :: String -> String
 -- impl. from https://hackage.haskell.org/package/extra-1.8/docs/src/Data.List.Extra.html#trim
 trim = dropWhile isSpace . dropWhileEnd isSpace
   where
-    dropWhileEnd :: (Char -> Bool) -> String -> String
     dropWhileEnd _ [] = []
     dropWhileEnd p (x:xs) =
       let rest = dropWhileEnd p xs

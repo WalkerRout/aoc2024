@@ -1,7 +1,5 @@
 module Lib.DayFive (solveDayFive) where
 
-import Debug.Trace
-
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
