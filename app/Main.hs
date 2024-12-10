@@ -9,15 +9,17 @@ import Lib
   , solveDaySix
   , solveDaySeven
   , solveDayEight
+  , solveDayNine
   )
 
 main :: IO ()
 main = do
-  solveDayOne
-  solveDayTwo
-  solveDayThree
-  solveDayFour
-  solveDayFive
+  --solveDayOne
+  --solveDayTwo
+  --solveDayThree
+  --solveDayFour
+  --solveDayFive
   --solveDaySix
   --solveDaySeven
-  solveDayEight
+  --solveDayEight
+  solveDayNine
