@@ -30,8 +30,9 @@ solvePartOne heightMap =
   let trailheads = [pos | (pos, h) <- Array.assocs heightMap, h == 0]
       -- no duplicates, we use sets...
       reachableSets = map reachableNines trailheads
-      -- this needs cleaning...
-      counts = foldl' (\acc s -> Set.foldl' (\m p -> Map.insertWith (+) p 1 m) acc s) Map.empty reachableSets
+      -- this still need some cleaning
+      mapFrom reached s = Set.foldl' (\m p -> Map.insertWith (+) p 1 m) reached s
+      counts = foldl' mapFrom Map.empty reachableSets
   in Map.foldl' (+) 0 counts
   where
     reachableNines start = dfs start (heightMap Array.! start) Set.empty
@@ -40,9 +41,8 @@ solvePartOne heightMap =
       | currentHeight == 9 = Set.insert pos acc
       | otherwise =
         let nextPositions = validNeighbours pos currentHeight heightMap
-            -- just go next man, passing along acc as context...
-            acc' = foldl' (\a p -> dfs p (currentHeight + 1) a) acc nextPositions
-        in acc'
+        -- just go next man, passing along acc as context...
+        in foldl' (\a p -> dfs p (currentHeight + 1) a) acc nextPositions
 
 solvePartTwo :: HeightMap -> Int
 -- how many ways can we reach all nine height places?
