@@ -8,6 +8,7 @@ module Lib
   , module Lib.DaySeven
   , module Lib.DayEight
   , module Lib.DayNine
+  , module Lib.DayTen
   ) where
 
 import Lib.DayOne
@@ -19,3 +20,4 @@ import Lib.DaySix
 import Lib.DaySeven
 import Lib.DayEight
 import Lib.DayNine
+import Lib.DayTen

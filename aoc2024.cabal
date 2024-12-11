@@ -30,6 +30,7 @@ library
       Lib.DayOne
       Lib.DaySeven
       Lib.DaySix
+      Lib.DayTen
       Lib.DayThree
       Lib.DayTwo
   other-modules:
@@ -40,9 +41,9 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , containers
-    , mtl
   default-language: Haskell2010
 
 executable aoc2024-exe
@@ -56,7 +57,7 @@ executable aoc2024-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aoc2024
+    , array
     , base >=4.7 && <5
     , containers
-    , mtl
   default-language: Haskell2010

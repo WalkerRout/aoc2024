@@ -76,7 +76,7 @@ solveDayEight = do
   grid <- readFileToGrid "data/dayEight.txt"
   print $ solvePartOne grid
   print $ solvePartTwo grid
-  print $ "solved day eight..."
+  print "solved day eight..."
 
 readFileToGrid :: FilePath -> IO Grid
 readFileToGrid filePath = do
