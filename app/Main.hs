@@ -17,6 +17,7 @@ import Lib
 
 main :: IO ()
 main = do
+  {-
   solveDayOne
   solveDayTwo
   solveDayThree
@@ -28,4 +29,5 @@ main = do
   solveDayNine
   solveDayTen
   solveDayEleven
+  -}
   solveDayTwelve
