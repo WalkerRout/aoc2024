@@ -12,11 +12,11 @@ import Lib
   , solveDayNine
   , solveDayTen
   , solveDayEleven
+  , solveDayTwelve
   )
 
 main :: IO ()
 main = do
-  {-
   solveDayOne
   solveDayTwo
   solveDayThree
@@ -27,5 +27,5 @@ main = do
   solveDayEight
   solveDayNine
   solveDayTen
-  -}
   solveDayEleven
+  solveDayTwelve

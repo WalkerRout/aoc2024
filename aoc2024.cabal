@@ -33,6 +33,7 @@ library
       Lib.DaySix
       Lib.DayTen
       Lib.DayThree
+      Lib.DayTwelve
       Lib.DayTwo
   other-modules:
       Paths_aoc2024
