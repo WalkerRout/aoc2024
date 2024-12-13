@@ -11,103 +11,175 @@ type Plot = Array.Array Position Char
 
 type SparsePlot = Array.Array Position (Maybe Char)
 
--- THE BELOW ALGORITHM IS DONE... MOVE ONTO PART 2
+-- aggregates accumulator into cost metric
+type Aggregator = (Int, Int) -> Int
 
--- for each element in the plot, we check if that element is Nothing, if it is
--- we go next...
+-- an explorer takes a position, a target character, a sparse plot, and the current accumulator
+-- pair, returning (newAcc, neighbours)
+type Explorer = Position -> Char -> SparsePlot -> (Int, Int) -> ((Int, Int), [Position])
 
--- once we find Just target, we want to do a search on that region, building up
--- a tuple representing (area, inversePerimeter)... we will need to use a visited
--- set to keep track of where we visit, since for each target we land on, we need
--- to count the number of target's in their neighbours... then we need to prune
--- out visited targets from the neighbours, and continue the search... we will add
--- the count of targets in the neighbours to the antiperimeter, before pruning
-
--- once we have explored an entire region, we produce the area/perimeter combo and 
--- the list of visited positions; we will set all elements in the visited positions 
--- to Nothing, to mark them as skippable/complete for the next iteration...
-
--- we will build a list of all area/perimeter combos (one for each region), the 
--- visited set is only used to update our search space after we finish checking 
--- out a region...
-
-dfs :: (Position, Char) -> SparsePlot -> ((Int, Int), Set.Set Position)
-dfs (startPos, targetChar) sparsePlot = helper startPos Set.empty 0 0
-  where
-    ((minR, minC), (maxR, maxC)) = Array.bounds sparsePlot
-
-    helper pos visited area anti
-      -- we already visited you...
-      | pos `Set.member` visited = ((area, anti), visited)
-      -- im not sure if i should indent guards with one tab past the condition or
-      -- one tab past the guard itself...
-      | otherwise = case sparsePlot ! pos of
-          -- we have a valid char to explore!
-          Just ch | ch == targetChar -> explore visited pos area anti 
-          -- neither target or already visited
-          _ -> ((area, anti), visited)
-
-    explore visited pos area anti = 
-      let validNeighbors = neighbors pos
-          selfCount = length $ filter (\n -> sparsePlot ! n == Just targetChar) validNeighbors
-      -- keep exploring the neighbours!          
-      in processNeighbors validNeighbors (area + 1, anti + selfCount) (Set.insert pos visited)
-
-    -- find neighbours within bounds
-    neighbors (r, c) = filter inBounds [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]
-      where
-        inBounds (nr, nc) = nr >= minR && nr <= maxR && nc >= minC && nc <= maxC
-
-    -- we ran out of neighbours, lets produce what we saw
-    processNeighbors [] acc visited = (acc, visited)
-    -- we have more things to explore! keep building up our region!
-    processNeighbors (neighbor:rest) (area, anti) visited =
-      let ((newArea, newAnti), newVisited) = helper neighbor visited area anti
-      in processNeighbors rest (newArea, newAnti) newVisited
-
-solve1 :: Maybe Position -> SparsePlot -> Int -> Int
+solve :: Aggregator -> Explorer -> Maybe Position -> SparsePlot -> Int -> Int
 -- nothing left to check, we saw the whole grid...
-solve1 Nothing sparse totalCost = totalCost
--- we reached an element! check if we visited it before...
-solve1 (Just targetPos) sparse totalCost = 
+solve _ _ Nothing _ totalCost = totalCost
+-- we reached an element!
+solve aggregate explore (Just targetPos) sparse totalCost =
+  -- check if we visited the new element before...
   case sparse ! targetPos of
     -- new char/region to explore! lets find out the area/perimeter and add it
     -- to our collection (aka totalCost)...
     Just ch ->
-      let ((area, anti), visited) = dfs (targetPos, ch) sparse
-          -- a box has 4 sides, n boxes have n*4 sides, we subtract anti from 
-          -- the maximum possible perimeter
-          perimeter = area * 4 - anti
-          newTotalCost = totalCost + (area*perimeter)
-          -- we mark the region we visited as empty now
+      -- explore subgraph/region of sparse with dfs
+      let ((area, metric), visited) = dfs (targetPos, ch)
+          costIncrement = aggregate (area, metric)
+          newTotalCost = totalCost + costIncrement
           newSparse = sparse // [(pos, Nothing) | pos <- Set.toList visited]
-      in solve1 next newSparse newTotalCost
+      in solve aggregate explore (nextPosition targetPos) newSparse newTotalCost
     -- we have already visited this region
-    Nothing -> solve1 next sparse totalCost
+    Nothing ->
+      solve aggregate explore (nextPosition targetPos) sparse totalCost
   where
-    next = nextPosition targetPos
-
-    nextPosition (r, c) =
-      let nextC = (c + 1) `mod` (maxC + 1)
-          nextR = r + if nextC == 0 then 1 else 0
-      in if nextR > maxR
-         then Nothing 
-         else Just (nextR, nextC)
-
     (maxR, maxC) = snd $ Array.bounds sparse
 
+    -- help move onto the next search
+    nextPosition (r, c) =
+      -- we can fit maxC in C, so lets wrap when we exceed max (hence maxC+1)
+      let nextC = (c + 1) `mod` (maxC + 1)
+          nextR = r + if nextC == 0 then 1 else 0
+      -- are we still in the grid?
+      in if nextR > maxR
+         -- no
+         then Nothing
+         -- yes, produce coords
+         else Just (nextR, nextC)
+
+    dfs (startPos, target) = helper startPos Set.empty (0,0)
+      where
+        helper pos visited (area, metric)
+          -- we already visited you...
+          | pos `Set.member` visited = ((area, metric), visited)
+          -- im not sure if i should indent guards with one tab past the condition or
+          -- one tab past the guard itself...
+          | otherwise = case sparse ! pos of
+              -- we have a valid char to explore!
+              Just ch | ch == target ->
+                let ((area', metric'), neighbors) = explore pos ch sparse (area, metric)
+                    visited' = Set.insert pos visited
+                    -- incredibly creative naming convention
+                    ((area'', metric''), visited'') = processNeighbors neighbors visited' (area', metric')
+                in ((area'', metric''), visited'')
+              -- neither target or already visited
+              _ -> ((area, metric), visited)
+
+        -- we ran out of neighbours, lets produce what we saw
+        processNeighbors [] visited acc = (acc, visited)
+        -- we have more things to explore! keep building up our region!
+        processNeighbors (n:ns) visited acc =
+          let (acc', visited') = helper n visited acc
+          in processNeighbors ns visited' acc'
+
+-- is (r, c) within [(minR, minC), (maxR, maxC)]?
+inBounds :: ((Int, Int), (Int, Int)) -> Position -> Bool
+inBounds ((minR, minC), (maxR, maxC)) (r, c) =
+  r >= minR && r <= maxR && c >= minC && c <= maxC
+
+orthNeighbors :: ((Int, Int), (Int, Int)) -> Position -> [Position]
+-- want neighbours directly above/below left/right of (r, c)
+orthNeighbors bounds (r, c) = 
+  filter (inBounds bounds) [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]
+
+aggregateAnti :: Aggregator
+aggregateAnti (area, anti) =
+  -- a box has 4 sides, n boxes have n*4 sides, we subtract anti from 
+  -- the maximum possible perimeter
+  let perimeter = area * 4 - anti
+  in area * perimeter
+
+exploreAnti :: Explorer
+exploreAnti pos ch sparse (area, anti) =
+  let bounds = Array.bounds sparse
+      neighbors = orthNeighbors bounds pos
+      sameRegionNeighbors = filter (\n -> sparse ! n == Just ch) neighbors
+      selfCount = length sameRegionNeighbors
+  in ((area + 1, anti + selfCount), sameRegionNeighbors)
+
 solvePartOne :: Plot -> Int
-solvePartOne plot = solve1 (Just (0, 0)) (fmap Just plot) 0
+-- we want to count the number of interior perimeters and subtract them from the
+-- theoretical max, giving us the total perimeter for a region (only orth neighbours)
+solvePartOne plot = solve aggregateAnti exploreAnti (Just (0,0)) (fmap Just plot) 0
+
+aggregateCorners :: Aggregator
+aggregateCorners (area, sides) = area * sides
+
+exploreCorners :: Explorer
+exploreCorners pos ch sparse (area, sides) =
+  let bounds = Array.bounds sparse
+      cellCorners = countCorners pos
+      neighbors = orthNeighbors bounds pos
+      sameRegionNeighbors = filter (\n -> sparse ! n == Just ch) neighbors
+  in ((area + 1, sides + cellCorners), sameRegionNeighbors)
+  where
+    -- we want to see 
+    countCorners (r, c) =
+      let bounds = Array.bounds sparse
+          curr = cell bounds (r, c)
+          -- we want orthogonal...
+          n = cell bounds (r-1, c)
+          e = cell bounds (r, c+1)
+          s = cell bounds (r+1, c)
+          w = cell bounds (r, c-1)
+          -- and diagonal neighbours.
+          ne = cell bounds (r-1, c+1)
+          se = cell bounds (r+1, c+1)
+          sw = cell bounds (r+1, c-1)
+          nw = cell bounds (r-1, c-1)
+          -- are we in the right region?
+          same x = x == curr
+          -- now we check our corners:
+          -- top right C,N,E,Ne
+          tr = isCorner (same n, same e, same ne)
+          -- bottom right C,S,E,Se
+          br = isCorner (same s, same e, same se)
+          -- bottom left C,S,W,Sw
+          bl = isCorner (same s, same w, same sw)
+          -- top left C,N,W,Nw
+          tl = isCorner (same n, same w, same nw)
+      in tl + tr + br + bl
+    
+    -- safe access a position in the grid...
+    cell bounds pos = if inBounds bounds pos then sparse ! pos else Nothing
+
+    -- inner corners look like:
+    -- .!.
+    -- .X!
+    -- ...
+    -- (imagine this 3 more times, rotated)
+    -- where two edges are different from the center
+    --
+    -- outer corners look like:
+    -- .X!
+    -- .XX
+    -- ...
+    -- (also this rotated 3 more times)
+    -- where a diagonal is different from center and two edges...
+    isCorner (orth1Same, orth2Same, diagSame) =
+      case (orth1Same, orth2Same, diagSame) of
+        -- inner corner: both orth false (different from center)
+        (False, False, _) -> 1
+        -- Outer corner: both orth true, diag false
+        (True, True, False) -> 1
+        _ -> 0
 
 solvePartTwo :: Plot -> Int
-solvePartTwo = undefined
+-- #sides = #corners (look at a drawing of a square), so we can just find the
+-- corners in between elements to count the number of different sides...
+solvePartTwo plot = solve aggregateCorners exploreCorners (Just (0,0)) (fmap Just plot) 0
 
 solveDayTwelve :: IO ()
 solveDayTwelve = do
   plot <- readFileToPlot "data/dayTwelve.txt"
   print $ solvePartOne plot
   print $ solvePartTwo plot
-  print "solved day twelve..."
+  putStrLn "solved day twelve..."
 
 readFileToPlot :: FilePath -> IO Plot
 readFileToPlot filePath = do
@@ -119,4 +191,4 @@ parsePlot content =
   let ls = lines content
       rows = length ls
       cols = length (head ls)
-  in Array.listArray ((0, 0), (rows-1, cols-1)) (concat ls)
+  in Array.listArray ((0,0), (rows-1, cols-1)) (concat ls)
