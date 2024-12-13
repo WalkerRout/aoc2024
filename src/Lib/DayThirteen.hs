@@ -56,7 +56,6 @@ solveEquation (Equation (Button ax ay) (Button bx by) (x, y)) = do
       detMB = ax*y - ay*x
   a <- detMA `intDiv` detI
   b <- detMB `intDiv` detI
-  guard (a >= 0 && b >= 0)
   return $ (a, b)
 
 metric :: (Int, Int) -> Int
