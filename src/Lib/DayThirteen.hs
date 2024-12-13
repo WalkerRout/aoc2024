@@ -2,7 +2,7 @@ module Lib.DayThirteen (solveDayThirteen) where
 
 import Data.Char (isSpace)
 import Data.List (stripPrefix)
-import Data.Maybe (mapMaybe)
+import Data.Maybe (mapMaybe, fromJust)
 
 import Control.Monad (guard)
 
@@ -118,19 +118,18 @@ parsePrize = parseLine "Prize"
 -- parse line with known prefix
 parseLine :: String -> String -> (Int, Int)
 parseLine prefix line =
-  case stripPrefix (prefix ++ ": X") line of
-    Nothing -> undefined
-    Just rest ->
-      let (signXAndXVal, rest2) = break (== ',') rest
-          (_, xValStr)      = splitSign signXAndXVal
-          yPart                 = drop 2 rest2 -- Drop ", "
-      in case stripPrefix "Y" yPart of
-        Nothing -> undefined
-        Just signYAndYVal ->
-          let (_, yValStr) = splitSign signYAndYVal
-              xVal = read xValStr
-              yVal = read yValStr
-          in (xVal, yVal)
+  -- we want to fail on incorrect input, so we unwrap
+  let rest = fromJust $ stripPrefix (prefix ++ ": X") line
+      (signXAndXVal, rest') = break (== ',') rest
+      (_, xValStr) = splitSign signXAndXVal
+      -- ignore ", "
+      yPart = drop 2 rest'
+      -- unwrap again
+      signYAndYVal = fromJust $ stripPrefix "Y" yPart
+      (_, yValStr) = splitSign signYAndYVal
+      xVal = read xValStr
+      yVal = read yValStr
+  in (xVal, yVal)
 
 -- split sign from number
 -- +29 -> (+, 29)
