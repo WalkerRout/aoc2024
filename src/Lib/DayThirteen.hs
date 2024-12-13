@@ -65,9 +65,10 @@ solvePartOne :: Equations -> Int
 solvePartOne = sum . map metric . mapMaybe solveEquation    
 
 scaleEquation :: Equation -> Equation
-scaleEquation (Equation ba bb (x, y)) = Equation ba bb (scale x, scale y)
+-- we define equation as a record, may as well use its features...
+scaleEquation e@(Equation _ _ (x, y)) = e { target = (trans x, trans y) }
   where
-    scale n = 10000000000000 + n
+    trans n = 10000000000000 + n
 
 solvePartTwo :: Equations -> Int
 solvePartTwo = sum . map metric . mapMaybe (solveEquation . scaleEquation)
