@@ -32,6 +32,7 @@ library
       Lib.DaySeven
       Lib.DaySix
       Lib.DayTen
+      Lib.DayThirteen
       Lib.DayThree
       Lib.DayTwelve
       Lib.DayTwo

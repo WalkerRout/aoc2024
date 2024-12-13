@@ -11,6 +11,7 @@ module Lib
   , module Lib.DayTen
   , module Lib.DayEleven
   , module Lib.DayTwelve
+  , module Lib.DayThirteen
   ) where
 
 import Lib.DayOne
@@ -25,3 +26,4 @@ import Lib.DayNine
 import Lib.DayTen
 import Lib.DayEleven
 import Lib.DayTwelve
+import Lib.DayThirteen
