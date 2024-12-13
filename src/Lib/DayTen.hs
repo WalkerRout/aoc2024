@@ -1,8 +1,9 @@
 module Lib.DayTen (solveDayTen) where
 
-import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.Array as Array
+
+import Data.Array ((!))
 
 import Data.List (foldl')
 import Data.Char (digitToInt)
@@ -22,46 +23,39 @@ neighbors (r, c) heightMap =
 validNeighbours :: Position -> Int -> HeightMap -> [Position]
 validNeighbours pos height heightMap = filter properHeight $ neighbors pos heightMap
   where
-    properHeight n = heightMap Array.! n == height + 1
+    properHeight n = heightMap ! n == height + 1
+
+-- we need a way to aggregate all 9 height places for a single trailhead
+pathsFrom :: HeightMap -> Position -> Map.Map Position Int
+-- for a given starting position at 0, find all unique, reachable 9 heights, counting
+-- the number of distinct paths that led to said position
+pathsFrom heightMap start = foldl' (step heightMap) (Map.singleton start 1) [1..9]
+
+step :: HeightMap -> Map.Map Position Int -> Int -> Map.Map Position Int
+-- given current reachable positions (and their path counts) at some height h-1,
+-- move to all positions of height h
+step heightMap currentMap targetHeight =
+  Map.fromListWith (+)
+    [ (newPos, count)
+    | (pos, count) <- Map.assocs currentMap
+    , newPos <- validNeighbours pos (targetHeight - 1) heightMap
+    ]
 
 solvePartOne :: HeightMap -> Int
--- how many different nine height places are reachable from all trailheads?
+-- how many distinct 9 height places are reachable from all trailheads?
+-- sum up how many distinct locations are reachable (per trailhead)
 solvePartOne heightMap =
   let trailheads = [pos | (pos, h) <- Array.assocs heightMap, h == 0]
-      -- no duplicates, we use sets...
-      reachableSets = map reachableNines trailheads
-      -- this still need some cleaning
-      mapFrom reached s = Set.foldl' (\m p -> Map.insertWith (+) p 1 m) reached s
-      counts = foldl' mapFrom Map.empty reachableSets
-  in Map.foldl' (+) 0 counts
-  where
-    reachableNines start = dfs start (heightMap Array.! start) Set.empty
-    dfs pos currentHeight acc
-      -- we saw a nine! add it to the pile...
-      | currentHeight == 9 = Set.insert pos acc
-      | otherwise =
-        let nextPositions = validNeighbours pos currentHeight heightMap
-        -- just go next man, passing along acc as context...
-        in foldl' (\a p -> dfs p (currentHeight + 1) a) acc nextPositions
+      allPaths = map (pathsFrom heightMap) trailheads
+  in sum (map length allPaths)
 
 solvePartTwo :: HeightMap -> Int
--- how many ways can we reach all nine height places?
+-- how many total paths reach 9 height places from trailheads?
+-- just sum up counts of all 9s from reachable trailheads
 solvePartTwo heightMap =
   let trailheads = [pos | (pos, h) <- Array.assocs heightMap, h == 0]
-      -- we create a map of all nine positions to the number of times we were able
-      -- to reach those positions
-      finalMap = foldl' scoreTrails Map.empty trailheads
-  in Map.foldl' (+) 0 finalMap
-  where
-    scoreTrails trailMap pos = dfs pos 0 trailMap
-    dfs pos currentHeight accMap
-      -- we want to see how many times we can reach a given nine from a given start,
-      -- so if we are on nine, we better mark it as another hit...
-      | currentHeight == 9 = Map.insertWith (+) pos 1 accMap
-      -- we should explore our neighbours, and continue looking for nine
-      | otherwise =
-        let nextPositions = validNeighbours pos currentHeight heightMap
-        in foldl' (\m p -> dfs p (currentHeight + 1) m) accMap nextPositions
+      allPaths = map (pathsFrom heightMap) trailheads
+  in sum (map sum allPaths)
 
 solveDayTen :: IO ()
 solveDayTen = do
