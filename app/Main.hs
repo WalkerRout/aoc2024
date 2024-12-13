@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Lib 
+import Lib
   ( solveDayOne
   , solveDayTwo
   , solveDayThree
@@ -14,6 +14,7 @@ import Lib
   , solveDayEleven
   , solveDayTwelve
   , solveDayThirteen
+--, solveDayFourteen
   )
 
 main :: IO ()
@@ -23,7 +24,7 @@ main = do
   solveDayThree
   solveDayFour
   solveDayFive
-  --solveDaySix
+  solveDaySix
   solveDaySeven
   solveDayEight
   solveDayNine
@@ -31,3 +32,4 @@ main = do
   solveDayEleven
   solveDayTwelve
   solveDayThirteen
+--solveDayFourteen

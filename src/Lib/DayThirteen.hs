@@ -9,13 +9,9 @@ import Control.Monad (guard)
 type Point = (Int, Int)
 
 -- a button has an X and a Y offset
-data Button = Button Int Int deriving Show
+data Button = Button Int Int
 
-data Equation = Equation
-  { buttonA :: Button
-  , buttonB :: Button
-  , target :: Point
-  } deriving (Show)
+data Equation = Equation Button Button Point
 
 type Equations = [Equation]
 
@@ -33,7 +29,7 @@ intDiv num denom
 --
 -- I = [ Ax Bx ]
 --     [ Ay By ]
--- det(I) = Ax*By-Ay*Bx
+-- det(I) = Ax*By - Ay*Bx
 --
 -- MA = [ X Bx ]
 --      [ Y By ]
@@ -65,8 +61,7 @@ solvePartOne :: Equations -> Int
 solvePartOne = sum . map metric . mapMaybe solveEquation    
 
 scaleEquation :: Equation -> Equation
--- we define equation as a record, may as well use its features...
-scaleEquation e@(Equation _ _ (x, y)) = e { target = (trans x, trans y) }
+scaleEquation (Equation ba bb (x, y)) = Equation ba bb (trans x, trans y)
   where
     trans n = 10000000000000 + n
 
