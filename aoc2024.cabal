@@ -25,6 +25,7 @@ library
       Lib
       Lib.DayEight
       Lib.DayEleven
+      Lib.DayFifteen
       Lib.DayFive
       Lib.DayFour
       Lib.DayFourteen

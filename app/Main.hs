@@ -14,7 +14,8 @@ import Lib
   , solveDayEleven
   , solveDayTwelve
   , solveDayThirteen
---, solveDayFourteen
+  , solveDayFourteen
+  , solveDayFifteen
   )
 
 main :: IO ()
@@ -24,7 +25,7 @@ main = do
   solveDayThree
   solveDayFour
   solveDayFive
-  solveDaySix
+  --solveDaySix
   solveDaySeven
   solveDayEight
   solveDayNine
@@ -32,4 +33,5 @@ main = do
   solveDayEleven
   solveDayTwelve
   solveDayThirteen
---solveDayFourteen
+  solveDayFourteen
+  solveDayFifteen
